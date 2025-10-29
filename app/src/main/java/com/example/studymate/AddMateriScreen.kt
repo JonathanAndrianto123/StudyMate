@@ -114,7 +114,7 @@ fun AddMateriScreen() {
                 Spacer(modifier = Modifier.height(40.dp))
 
                 Button(
-                    onClick = { /* TODO: simpan data */ },
+                    onClick = { /* */ },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1C4D43)),
                     shape = MaterialTheme.shapes.medium,
                     modifier = Modifier
