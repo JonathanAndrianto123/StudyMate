@@ -1,5 +1,6 @@
-package com.example.studymate
+package com.example.studymate.uiux.auth
 
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -39,26 +40,29 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun SignUp(
+    viewModel: SignUpViewModel = viewModel(),
     onSignUpClicked: () -> Unit = {},
     onSignInClicked: () -> Unit = {}
 ) {
     Scaffold { padding ->
-        Column (
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
                 .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.Start
-        ){
+        ) {
+
             Spacer(modifier = Modifier.height(60.dp))
 
-            // ===== TITLE =====
+            // ===== HEADER =====
             Text(
                 text = "Register Now",
                 fontSize = 26.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF1F4D3A)
             )
+
             Spacer(modifier = Modifier.height(6.dp))
 
             Text(
@@ -68,31 +72,46 @@ fun SignUp(
             )
 
             Spacer(modifier = Modifier.height(32.dp))
+
+            // ===== INPUTS =====
             RegisterTextField(
                 hint = "Complete Name",
-                icon = Icons.Default.Person
+                icon = Icons.Default.Person,
+                value = viewModel.name,
+                onValueChange = viewModel::onNameChange
             )
 
             RegisterTextField(
                 hint = "Email Address",
-                icon = Icons.Default.Email
+                icon = Icons.Default.Email,
+                value = viewModel.email,
+                onValueChange = viewModel::onEmailChange
             )
 
             RegisterTextField(
                 hint = "Create Password",
                 icon = Icons.Default.Lock,
+                value = viewModel.password,
+                onValueChange = viewModel::onPasswordChange,
                 isPassword = true
             )
 
             RegisterTextField(
                 hint = "Verify Password",
                 icon = Icons.Default.Lock,
+                value = viewModel.confirmPassword,
+                onValueChange = viewModel::onConfirmPasswordChange,
                 isPassword = true
             )
 
             Spacer(modifier = Modifier.height(32.dp))
-            Button (
-                onClick = onSignUpClicked,
+
+            // ===== FOOTER =====
+            Button(
+                onClick = {
+                    viewModel.signUp()
+                    onSignUpClicked()
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(55.dp),
@@ -109,7 +128,8 @@ fun SignUp(
             }
 
             Spacer(modifier = Modifier.height(16.dp))
-            Row (
+
+            Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center
             ) {
@@ -129,19 +149,21 @@ fun SignUp(
         }
     }
 }
+
+
 @Composable
 fun RegisterTextField(
     hint: String,
     icon: ImageVector,
+    value: String,
+    onValueChange: (String) -> Unit,
     isPassword: Boolean = false
 ) {
-    var text by remember { mutableStateOf("") }
-
     Spacer(modifier = Modifier.height(12.dp))
 
     OutlinedTextField(
-        value = text,
-        onValueChange = { text = it },
+        value = value,
+        onValueChange = onValueChange,
         placeholder = { Text(hint) },
         leadingIcon = {
             Icon(
@@ -167,6 +189,7 @@ fun RegisterTextField(
             .height(55.dp)
     )
 }
+
 
 @Preview(showBackground = true)
 @Composable

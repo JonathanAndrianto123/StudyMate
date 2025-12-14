@@ -1,6 +1,5 @@
-package com.example.studymate
+package com.example.studymate.uiux.materi
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -13,30 +12,27 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 
-data class Materi(
-    val name: String,
-    val targetTime: String,
-    val progressTime: String,
-    val progress: Int
-)
 
 @Composable
-fun ListMateriScreen() {
-    val materiList = listOf(
-        Materi("Matematika Teknik", "2 hour 15 minute", "0%", 0),
-        Materi("Algoritma Graph", "3 hour 45 minute", "50%", 50)
-    )
-
+fun ListMateriScreen(onAddClick: () -> Unit,
+                     onDetailClick: () -> Unit,
+                     onProfileClick: () -> Unit = {},
+                     viewModel: MateriViewModel = viewModel()
+) {
+    val materiList = viewModel.materiList.value
     Scaffold(
-        bottomBar = { NavbarBawah() },
+        bottomBar = { NavbarBawah(
+            onHomeClick = {},
+            onProfileClick = onProfileClick
+        ) },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = {},
+                onClick = onAddClick,
                 containerColor = Color(0xFF1C4D43)
             ) {
                 Text("+", color = Color.White, fontSize = 28.sp)
@@ -62,7 +58,10 @@ fun ListMateriScreen() {
 
             LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 items(materiList) { materi ->
-                    MateriCard(materi)
+                    MateriCard(
+                        materi = materi,
+                        onDetailClick = onDetailClick
+                    )
                 }
             }
         }
@@ -70,7 +69,10 @@ fun ListMateriScreen() {
 }
 
 @Composable
-fun MateriCard(materi : Materi) {
+fun MateriCard(
+    materi: MateriUiState,
+    onDetailClick: () -> Unit
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -87,7 +89,7 @@ fun MateriCard(materi : Materi) {
             ) {
                 Text(materi.name, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 Button(
-                    onClick = {},
+                    onClick = onDetailClick,
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1C4D43)),
                     contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
                 ) {
@@ -124,17 +126,20 @@ fun MateriCard(materi : Materi) {
 
 
 @Composable
-fun NavbarBawah() {
+fun NavbarBawah(
+    onHomeClick: () -> Unit,
+    onProfileClick: () -> Unit
+) {
     NavigationBar(containerColor = Color.White) {
         NavigationBarItem(
             selected = true,
-            onClick = {},
+            onClick = onHomeClick,
             icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
             label = { Text("Home") }
         )
         NavigationBarItem(
             selected = false,
-            onClick = {},
+            onClick = onProfileClick,
             icon = { Icon(Icons.Default.Person, contentDescription = "Profile") },
             label = { Text("Profile") }
         )
@@ -144,5 +149,9 @@ fun NavbarBawah() {
 @Preview(showBackground = true)
 @Composable
 fun ListMateriScreenPreview() {
-    ListMateriScreen()
+    ListMateriScreen(
+        onAddClick = {},
+        onDetailClick = {}
+    )
 }
+

@@ -1,4 +1,4 @@
-package com.example.studymate
+package com.example.studymate.uiux.main
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement

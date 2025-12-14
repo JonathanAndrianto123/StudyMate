@@ -1,4 +1,4 @@
-package com.example.studymate
+package com.example.studymate.uiux.materi
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
@@ -13,9 +13,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
-fun AddMateriScreen() {
+fun AddMateriScreen(
+    onBack: () -> Unit,
+    viewModel: MateriViewModel = viewModel(),
+    onProfileClick: () -> Unit = {}
+) {
     var materiName by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var hour by remember { mutableStateOf("") }
@@ -23,7 +28,10 @@ fun AddMateriScreen() {
     var second by remember { mutableStateOf("") }
 
     Scaffold(
-        bottomBar = { NavbarBawah() }
+        bottomBar = { NavbarBawah(
+            onHomeClick = {},
+            onProfileClick = onProfileClick
+        ) }
     ) { padding ->
         Column(
             modifier = Modifier
@@ -144,8 +152,8 @@ fun TimeField(value: String, onValueChange: (String) -> Unit, placeholder: Strin
     )
 }
 
-@Preview(showBackground = true)
-@Composable
-fun AddMateriScreenPreview() {
-    AddMateriScreen()
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun AddMateriScreenPreview() {
+//    AddMateriScreen()
+//}
