@@ -1,9 +1,16 @@
 package com.example.studymate.uiux.main
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
+import com.example.studymate.data.local.StudymateDatabase
+import com.example.studymate.data.repository.MateriRepository
 import com.example.studymate.uiux.auth.SignUp
 import com.example.studymate.uiux.main.Routes
 import com.example.studymate.uiux.materi.*
@@ -49,30 +56,60 @@ fun MainNavGraph(navController: NavHostController) {
                 onAddClick = {
                     navController.navigate(Routes.ADD_MATERI)
                 },
-                onDetailClick = {
-                    navController.navigate(Routes.DETAIL_MATERI)
+                onDetailClick = { materiId ->
+                    navController.navigate(Routes.detailMateri(materiId))
                 }
             )
         }
 
         composable(Routes.ADD_MATERI) {
+            val context = LocalContext.current
+            val db = StudymateDatabase.getDatabase(context)
+            val repository = MateriRepository(db.materiDao())
+            val factory = MateriViewModelFactory(repository)
+
+            val materiViewModel: MateriViewModel = viewModel(factory = factory)
             AddMateriScreen(
-                onBack = { navController.popBackStack() }
+                onBack = { navController.popBackStack() },
+                viewModel = materiViewModel
             )
         }
 
-        composable(Routes.DETAIL_MATERI) {
+        composable(
+            route = Routes.DETAIL_MATERI,
+            arguments = listOf(
+                navArgument("materiId") { type = NavType.IntType }
+            )
+        ) { backStackEntry ->
+
+            val materiId = backStackEntry.arguments!!.getInt("materiId")
+
+            val context = LocalContext.current
+            val db = remember { StudymateDatabase.getDatabase(context) }
+            val repository = remember { MateriRepository(db.materiDao()) }
+            val factory = remember { MateriViewModelFactory(repository) }
+
+            val materiViewModel: MateriViewModel = viewModel(factory = factory)
+
             DetailMateriScreen(
+                materiId = materiId,
+                viewModel = materiViewModel,
+                onBack = {
+                    navController.popBackStack()
+                },
                 onStartTimer = {
                     navController.navigate(Routes.TIMER)
                 }
             )
         }
 
+
         composable(Routes.TIMER) {
+            val sessionViewModel: SessionViewModel = viewModel()
             TimerScreen(
-                onStop = {
-                    navController.navigate(Routes.SESSION_HISTORY)
+                viewModel = sessionViewModel,
+                onBack = {
+                    navController.popBackStack()
                 }
             )
         }

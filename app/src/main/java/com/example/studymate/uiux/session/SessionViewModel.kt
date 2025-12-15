@@ -14,6 +14,12 @@ import java.util.Locale
 
 class SessionViewModel : ViewModel() {
 
+    interface SessionController {
+        fun startSession()
+        fun pauseSession(auto: Boolean = false)
+        fun resumeSession(auto: Boolean = false)
+    }
+
     // ================= TIMER STATE =================
     private var timerJob: Job? = null
 
@@ -36,6 +42,10 @@ class SessionViewModel : ViewModel() {
         private set
 
     // ================= TIMER ACTIONS =================
+
+    var isAutoPaused by mutableStateOf(false)
+        private set
+
     fun startTimer() {
         if (isRunning) return
         isRunning = true
@@ -63,6 +73,19 @@ class SessionViewModel : ViewModel() {
 
         elapsedSeconds = 0
     }
+
+    fun autoPauseTimer() {
+        if (!isRunning) return
+        isAutoPaused = true
+        pauseTimer()
+    }
+
+    fun autoResumeTimer() {
+        if (isRunning || !isAutoPaused) return
+        isAutoPaused = false
+        startTimer()
+    }
+
 
     // ================= SESSION HANDLING =================
     private fun addSession(materiName: String) {

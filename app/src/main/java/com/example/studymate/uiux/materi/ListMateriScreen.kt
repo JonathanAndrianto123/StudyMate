@@ -16,20 +16,43 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.studymate.data.local.StudymateDatabase
+import com.example.studymate.data.local.entity.MateriEntity
+import com.example.studymate.data.repository.MateriRepository
+import androidx.compose.ui.platform.LocalContext
+import com.example.studymate.uiux.materi.MateriViewModelFactory
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 
 
 @Composable
-fun ListMateriScreen(onAddClick: () -> Unit,
-                     onDetailClick: () -> Unit,
-                     onProfileClick: () -> Unit = {},
-                     viewModel: MateriViewModel = viewModel()
+fun ListMateriScreen(
+    onAddClick: () -> Unit,
+    onDetailClick: (Int) -> Unit,
+    onProfileClick: () -> Unit = {}
 ) {
-    val materiList = viewModel.materiList.value
+    val context = LocalContext.current
+
+    // ===== DB & REPO =====
+    val db = remember { StudymateDatabase.getDatabase(context) }
+    val repository = remember { MateriRepository(db.materiDao()) }
+
+    // ===== VIEWMODEL =====
+    val viewModel: MateriViewModel = viewModel(
+        factory = MateriViewModelFactory(repository)
+    )
+
+    // ===== DATA =====
+    val materiList by viewModel.materiList.collectAsState()
+
     Scaffold(
-        bottomBar = { NavbarBawah(
-            onHomeClick = {},
-            onProfileClick = onProfileClick
-        ) },
+        bottomBar = {
+            NavbarBawah(
+                onHomeClick = {},
+                onProfileClick = onProfileClick
+            )
+        },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onAddClick,
@@ -40,27 +63,30 @@ fun ListMateriScreen(onAddClick: () -> Unit,
         },
         floatingActionButtonPosition = FabPosition.Center
     ) { padding ->
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
                 .padding(16.dp)
         ) {
+
             Text(
                 text = "Home",
                 fontWeight = FontWeight.Bold,
                 fontSize = 22.sp,
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text("Welcome to Study Mate!")
+
             Spacer(modifier = Modifier.height(12.dp))
 
             LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 items(materiList) { materi ->
                     MateriCard(
                         materi = materi,
-                        onDetailClick = onDetailClick
+                        onDetailClick = {
+                            onDetailClick(materi.id)
+                        }
                     )
                 }
             }
@@ -68,61 +94,39 @@ fun ListMateriScreen(onAddClick: () -> Unit,
     }
 }
 
+
 @Composable
 fun MateriCard(
-    materi: MateriUiState,
+    materi: MateriEntity,
     onDetailClick: () -> Unit
 ) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight(),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFF7F7F7)),
+        modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(2.dp)
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
 
             Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(materi.name, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                Button(
-                    onClick = onDetailClick,
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1C4D43)),
-                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
-                ) {
-                    Text("Detail", color = Color.White, fontSize = 12.sp)
+                Text(materi.name, fontWeight = FontWeight.Bold)
+
+                Button(onClick = onDetailClick) {
+                    Text("Detail")
                 }
             }
 
-            Spacer(modifier = Modifier.height(4.dp))
-            Text("Target Time", fontSize = 12.sp, color = Color.Gray)
-            Text(materi.targetTime, fontSize = 13.sp, fontWeight = FontWeight.Medium)
-            Spacer(modifier = Modifier.height(2.dp))
-            Text("Progress Time", fontSize = 12.sp, color = Color.Gray)
-            Text(materi.progressTime, fontSize = 13.sp, fontWeight = FontWeight.Medium)
+            Text("Target Time: ${materi.targetTime}")
 
-            Spacer(modifier = Modifier.height(8.dp))
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                LinearProgressIndicator(
-                    progress = materi.progress / 100f,
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(6.dp),
-                    color = Color(0xFF1C4D43),
-                    trackColor = Color(0xFFE6E6E6)
-                )
-                Text("${materi.progress}%", fontSize = 12.sp, color = Color(0xFF1C4D43))
-            }
+            LinearProgressIndicator(
+                progress = materi.progress / 100f,
+                modifier = Modifier.height(6.dp)
+            )
         }
     }
 }
+
 
 
 @Composable

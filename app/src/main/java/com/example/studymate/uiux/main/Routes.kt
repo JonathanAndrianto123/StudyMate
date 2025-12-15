@@ -7,7 +7,10 @@ object Routes {
 
     const val MATERI_LIST = "materi_list"
     const val ADD_MATERI = "add_materi"
-    const val DETAIL_MATERI = "detail_materi"
+    const val DETAIL_MATERI = "detail_materi/{materiId}"
+    fun detailMateri(materiId: Int): String {
+        return "detail_materi/$materiId"
+    }
 
     const val TIMER = "timer"
     const val SESSION_HISTORY = "session_history"

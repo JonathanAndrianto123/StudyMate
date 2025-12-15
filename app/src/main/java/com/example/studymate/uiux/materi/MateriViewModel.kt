@@ -1,43 +1,62 @@
 package com.example.studymate.uiux.materi
 
+import android.app.Application
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.studymate.data.local.StudymateDatabase
+import com.example.studymate.data.local.entity.MateriEntity
+import com.example.studymate.data.repository.MateriRepository
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
-class MateriViewModel : ViewModel() {
+class MateriViewModel(
+    private val repository: MateriRepository
+) : ViewModel() {
 
-    // ================= LIST =================
-    var materiList = mutableStateOf(
-        listOf(
-            MateriUiState(
-                id = 1,
-                name = "Matematika Teknik",
-                targetTime = "02 : 15 : 00",
-                progressTime = "0%",
-                progress = 40,
-                todayTime = "0 hr 00 min",
-                totalTime = "1 hr 20 min"
-            ),
-            MateriUiState(
-                id = 2,
-                name = "Algoritma Graph",
-                targetTime = "03 : 45 : 00",
-                progressTime = "50%",
-                progress = 50,
-                todayTime = "0 hr 30 min",
-                totalTime = "2 hr 10 min"
-            )
+    // ===== LIST DARI ROOM =====
+    val materiList = repository.getAllMateri()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = emptyList<MateriEntity>()
         )
-    )
+
+    // ===== SELECTED =====
+    var selectedMateri by mutableStateOf<MateriEntity?>(null)
         private set
 
-    // ================= SELECTED =================
-    var selectedMateri by mutableStateOf<MateriUiState?>(null)
-        private set
+//    fun loadMateriById(id: Int) {
+//        viewModelScope.launch {
+//            selectedMateri = repository.getMateriById(id)
+//        }
+//    }
 
-    // ================= ACTION =================
-    fun selectMateri(materi: MateriUiState) {
-        selectedMateri = materi
+    fun getMateriById(id: Int): Flow<MateriEntity?> {
+        return repository.getMateriById(id)
     }
+
+
+
+    fun addMateri(
+        name: String,
+        targetTime: String,
+        description: String
+    ) {
+        viewModelScope.launch {
+            repository.addMateri(
+                MateriEntity(
+                    name = name,
+                    targetTime = targetTime,
+                    description = description
+                )
+            )
+        }
+    }
+
 }

@@ -18,7 +18,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 @Composable
 fun AddMateriScreen(
     onBack: () -> Unit,
-    viewModel: MateriViewModel = viewModel(),
+    viewModel: MateriViewModel,
     onProfileClick: () -> Unit = {}
 ) {
     var materiName by remember { mutableStateOf("") }
@@ -122,7 +122,14 @@ fun AddMateriScreen(
                 Spacer(modifier = Modifier.height(40.dp))
 
                 Button(
-                    onClick = { /* */ },
+                    onClick = {
+                        viewModel.addMateri(
+                            name = materiName,
+                            targetTime = normalizeTime(hour, minute, second),
+                            description = description
+                        )
+                        onBack()
+                    },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1C4D43)),
                     shape = MaterialTheme.shapes.medium,
                     modifier = Modifier
@@ -151,6 +158,14 @@ fun TimeField(value: String, onValueChange: (String) -> Unit, placeholder: Strin
             .height(70.dp)
     )
 }
+
+fun normalizeTime(h: String, m: String, s: String): String {
+    val hh = h.ifBlank { "00" }.padStart(2, '0')
+    val mm = m.ifBlank { "00" }.padStart(2, '0')
+    val ss = s.ifBlank { "00" }.padStart(2, '0')
+    return "$hh:$mm:$ss"
+}
+
 
 //@Preview(showBackground = true)
 //@Composable

@@ -7,9 +7,16 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -19,46 +26,52 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimerScreen(
-    viewModel: SessionViewModel = viewModel(),
-    onStop: () -> Unit = {}
+    viewModel: SessionViewModel,
+    onBack: () -> Unit
 ) {
-    Scaffold { padding ->
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Study Timer") },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.Default.ArrowBack, null)
+                    }
+                }
+            )
+        }
+    ) { padding ->
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(padding),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
 
-            Text("Study Timer", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            Text(viewModel.formattedTime, fontSize = 40.sp)
 
-            Spacer(Modifier.height(40.dp))
+            Spacer(Modifier.height(24.dp))
 
-            Text(
-                text = viewModel.formattedTime,
-                fontSize = 36.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            Spacer(Modifier.height(40.dp))
-
-            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                Button(onClick = viewModel::startTimer) { Text("START") }
-                Button(onClick = viewModel::pauseTimer) { Text("PAUSE") }
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Button(onClick = { viewModel.startTimer() }) { Text("START") }
+                Button(onClick = { viewModel.pauseTimer() }) { Text("PAUSE") }
                 Button(onClick = {
                     viewModel.stopTimer()
-                    onStop()
+                    onBack()
                 }) { Text("STOP") }
             }
         }
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun TimerScreenPreview() {
-    TimerScreenPreview()
-}
+
+//@Preview(showBackground = true)
+//@Composable
+//fun TimerScreenPreview() {
+//    TimerScreenPreview()
+//}
