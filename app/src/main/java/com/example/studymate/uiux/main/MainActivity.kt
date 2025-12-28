@@ -25,52 +25,39 @@ import androidx.activity.viewModels
 
 class MainActivity : ComponentActivity() {
 
+
     private lateinit var flipDetector: FlipDetector
+    private lateinit var locationProvider: LocationProvider
+
     private val sessionViewModel: SessionViewModel by viewModels {
         val userPrefs = com.example.studymate.util.UserPreferences(applicationContext)
         val db = com.example.studymate.data.local.StudymateDatabase.getDatabase(applicationContext)
         val repository = com.example.studymate.data.repository.StudySessionRepository(db.studySessionDao())
+        
         com.example.studymate.uiux.session.SessionViewModelFactory(
             applicationContext,
             repository,
-            userPrefs.getCurrentUserId()
+            userPrefs.getCurrentUserId(),
+            flipDetector,
+            locationProvider
         )
-    }
-
-    private var lastFlipTs = 0L
-    private val DEBOUNCE_MS = 1200L
-
-    private fun canToggle(): Boolean {
-        val now = System.currentTimeMillis()
-        return if (now - lastFlipTs > DEBOUNCE_MS) {
-            lastFlipTs = now
-            true
-        } else {
-            false
-        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent {
-            val navController = rememberNavController()
-            MainNavGraph(navController = navController)
-        }
 
         flipDetector = FlipDetector(this)
+        locationProvider = LocationProvider(this)
 
-        lifecycleScope.launch {
-            flipDetector.isFaceDown.collect { isDown ->
-                if (!canToggle()) return@collect
-
-                if (isDown) {
-                    sessionViewModel.autoPauseTimer()
-                } else {
-                    sessionViewModel.autoResumeTimer()
-                }
-            }
+        setContent {
+            val navController = rememberNavController()
+            MainNavGraph(
+                navController = navController,
+                flipDetector = flipDetector,
+                locationProvider = locationProvider
+            )
         }
-
+        
         scheduleStudyReminders()
     }
 
@@ -88,11 +75,15 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-        flipDetector.start()
+        if (::flipDetector.isInitialized) {
+            flipDetector.start()
+        }
     }
 
     override fun onPause() {
         super.onPause()
-        flipDetector.stop()
+        if (::flipDetector.isInitialized) {
+            flipDetector.stop()
+        }
     }
 }

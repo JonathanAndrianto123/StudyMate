@@ -25,6 +25,7 @@ fun StatsScreen(
     viewModel: StatsViewModel
 ) {
     val stats by viewModel.stats.collectAsState()
+    val totalDistractions by viewModel.totalDistractions.collectAsState()
 
     Scaffold { padding ->
         Column(
@@ -36,11 +37,26 @@ fun StatsScreen(
             Text("Statistics", fontSize = 22.sp, fontWeight = FontWeight.Bold)
 
             Spacer(Modifier.height(16.dp))
+            
+            androidx.compose.material3.Card(
+                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                colors = androidx.compose.material3.CardDefaults.cardColors(
+                    containerColor = androidx.compose.ui.graphics.Color(0xFFFFCDD2)
+                )
+            ) {
+                Column(Modifier.padding(16.dp)) {
+                    Text("Total Distractions", fontWeight = FontWeight.Bold)
+                    Text("$totalDistractions times phone flipped", fontSize = 20.sp)
+                }
+            }
+
+            Text("Course Progress", fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
+            Spacer(Modifier.height(8.dp))
 
             stats.forEach {
                 Text(it.name)
                 LinearProgressIndicator(
-                    progress = it.progress / 100f,
+                    progress = { it.progress / 100f },
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(Modifier.height(12.dp))

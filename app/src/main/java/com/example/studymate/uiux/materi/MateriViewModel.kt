@@ -15,7 +15,6 @@ class MateriViewModel(
     private val userId: Int
 ) : ViewModel() {
 
-    // ===== LIST DARI ROOM SCOPED BY USER =====
     val materiList = repository.getAllMateri(userId)
         .stateIn(
             scope = viewModelScope,

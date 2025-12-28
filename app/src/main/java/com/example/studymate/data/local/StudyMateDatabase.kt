@@ -78,9 +78,67 @@ private val MIGRATION_2_3 = object : Migration(2, 3) {
     }
 }
 
+
+private val MIGRATION_4_5 = object : Migration(4, 5) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        // Add location columns to study_sessions
+        db.execSQL("ALTER TABLE study_sessions ADD COLUMN latitude REAL DEFAULT NULL")
+        db.execSQL("ALTER TABLE study_sessions ADD COLUMN longitude REAL DEFAULT NULL")
+    }
+}
+
+
+private val MIGRATION_5_6 = object : Migration(5, 6) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE study_sessions ADD COLUMN distractionCount INTEGER NOT NULL DEFAULT 0")
+    }
+}
+
+private val MIGRATION_6_7 = object : Migration(6, 7) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        // Method 1: Check existing columns
+        val cursor = db.query("PRAGMA table_info(study_sessions)")
+        val existingColumns = mutableSetOf<String>()
+        while (cursor.moveToNext()) {
+            val name = cursor.getString(cursor.getColumnIndexOrThrow("name"))
+            existingColumns.add(name)
+        }
+        cursor.close()
+
+        // Method 2: Defensive Try-Catch for column additions
+        // Even if the check above says it's missing, some weird state might cause an error.
+        // We catch the specific error for duplicate column.
+        
+        if (!existingColumns.contains("userId")) {
+            try {
+                db.execSQL("ALTER TABLE study_sessions ADD COLUMN userId INTEGER NOT NULL DEFAULT 0")
+            } catch (e: Exception) {
+                // If it fails (likely duplicate column), we just ignore it as the column exists.
+                e.printStackTrace()
+            }
+        }
+        
+        if (!existingColumns.contains("durationMs")) {
+            try {
+                db.execSQL("ALTER TABLE study_sessions ADD COLUMN durationMs INTEGER NOT NULL DEFAULT 0")
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+        
+        // Index creation usually has IF NOT EXISTS, but try-catch is safer too 
+        try {
+            db.execSQL("CREATE INDEX IF NOT EXISTS index_study_sessions_materiId ON study_sessions(materiId)")
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+}
+
 @Database(
     entities = [MateriEntity::class, UserEntity::class, StudySessionEntity::class],
-    version = 4
+    version = 7,
+    exportSchema = false
 )
 abstract class StudymateDatabase : RoomDatabase() {
 
@@ -99,7 +157,7 @@ abstract class StudymateDatabase : RoomDatabase() {
                     StudymateDatabase::class.java,
                     "studymate_db"
                 )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
                     .fallbackToDestructiveMigration()
                     .build()
                     .also { INSTANCE = it }

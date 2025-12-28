@@ -27,7 +27,8 @@ fun DetailMateriScreen(
     materiId: Int,
     viewModel: MateriViewModel,
     onBack: () -> Unit,
-    onStartTimer: (Int, String) -> Unit
+    onStartTimer: (Int, String, String) -> Unit,
+    onStudyHistory: (Int) -> Unit
 ) {
     val materiState by viewModel.getMateriById(materiId)
         .collectAsState(initial = null)
@@ -76,7 +77,7 @@ fun DetailMateriScreen(
                 Text("${materi.progress}%", fontWeight = FontWeight.Bold, fontSize = 13.sp)
             }
             LinearProgressIndicator(
-                progress = materi.progress / 100f,
+                progress = { materi.progress / 100f },
                 modifier = Modifier.fillMaxWidth(),
                 color = Color(0xFF1F4D3A)
             )
@@ -92,10 +93,17 @@ fun DetailMateriScreen(
             Spacer(Modifier.height(24.dp))
 
             Button(
-                onClick = { onStartTimer(materi.id, materi.name) },
+                onClick = { onStartTimer(materi.id, materi.name, materi.targetTime) },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("START STUDY")
+            }
+            
+            OutlinedButton(
+                onClick = { onStudyHistory(materi.id) },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("STUDY HISTORY")
             }
         }
     }

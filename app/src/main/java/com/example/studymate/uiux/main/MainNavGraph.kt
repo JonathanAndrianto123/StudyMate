@@ -19,12 +19,16 @@ import com.example.studymate.uiux.stats.StatsScreen
 import com.example.studymate.uiux.profile.ProfileScreen
 import com.example.studymate.uiux.profile.ProfileViewModel
 import com.example.studymate.uiux.profile.ProfileViewModelFactory
-import com.example.studymate.uiux.profile.EditProfileScreen
+
 import com.example.studymate.uiux.stats.StatsViewModel
 import com.example.studymate.uiux.stats.StatsViewModelFactory
 
 @Composable
-fun MainNavGraph(navController: NavHostController) {
+fun MainNavGraph(
+    navController: NavHostController,
+    flipDetector: com.example.studymate.sensor.FlipDetector,
+    locationProvider: com.example.studymate.location.LocationProvider
+) {
 
     val context = LocalContext.current
 
@@ -147,8 +151,11 @@ fun MainNavGraph(navController: NavHostController) {
                 onBack = {
                     navController.popBackStack()
                 },
-                onStartTimer = { materiId, materiName ->
-                    navController.navigate(Routes.timer(materiId, materiName))
+                onStartTimer = { materiId, materiName, targetTime ->
+                    navController.navigate(Routes.timer(materiId, materiName, targetTime))
+                },
+                onStudyHistory = { materiId ->
+                    navController.navigate(Routes.studyHistory(materiId))
                 }
             )
         }
@@ -158,7 +165,8 @@ fun MainNavGraph(navController: NavHostController) {
             route = Routes.TIMER,
             arguments = listOf(
                 navArgument("materiId") { type = NavType.IntType },
-                navArgument("materiName") { type = NavType.StringType }
+                navArgument("materiName") { type = NavType.StringType },
+                navArgument("targetTime") { type = NavType.StringType }
             )
         ) { backStackEntry ->
             val userPrefs = remember { com.example.studymate.util.UserPreferences(context) }
@@ -166,16 +174,28 @@ fun MainNavGraph(navController: NavHostController) {
             
             val materiId = backStackEntry.arguments!!.getInt("materiId")
             val materiName = backStackEntry.arguments!!.getString("materiName") ?: "Unknown"
+            val targetTime = backStackEntry.arguments!!.getString("targetTime") ?: "0:0:0"
 
             val db = remember { StudymateDatabase.getDatabase(context) }
             val studySessionRepository = remember { com.example.studymate.data.repository.StudySessionRepository(db.studySessionDao()) }
-            val factory = remember { SessionViewModelFactory(context, studySessionRepository, userId) }
+            
+            // Pass the dependencies from MainNavGraph arguments!
+            val factory = remember { 
+                SessionViewModelFactory(
+                    context, 
+                    studySessionRepository, 
+                    userId, 
+                    flipDetector, 
+                    locationProvider
+                ) 
+            }
 
             val sessionViewModel: SessionViewModel = viewModel(factory = factory)
 
             TimerScreen(
                 materiId = materiId,
                 materiName = materiName,
+                targetTime = targetTime,
                 viewModel = sessionViewModel,
                 onBack = {
                     navController.popBackStack()
@@ -186,6 +206,22 @@ fun MainNavGraph(navController: NavHostController) {
         composable(Routes.SESSION_HISTORY) {
             SessionHistoryScreen()
         }
+        
+        composable(
+            route = Routes.STUDY_HISTORY,
+            arguments = listOf(
+                navArgument("materiId") { type = NavType.IntType }
+            )
+        ) { backStackEntry ->
+            val materiId = backStackEntry.arguments!!.getInt("materiId")
+            
+            StudyHistoryScreen(
+                materiId = materiId,
+                onBack = {
+                     navController.popBackStack()
+                }
+            )
+        }
 
         composable(Routes.STATS) {
             val userPrefs = remember { com.example.studymate.util.UserPreferences(context) }
@@ -193,7 +229,8 @@ fun MainNavGraph(navController: NavHostController) {
             
             val db = remember { StudymateDatabase.getDatabase(context) }
             val repository = remember { MateriRepository(db.materiDao()) }
-            val factory = remember { StatsViewModelFactory(repository, userId) }
+            val sessionRepository = remember { com.example.studymate.data.repository.StudySessionRepository(db.studySessionDao()) }
+            val factory = remember { StatsViewModelFactory(repository, sessionRepository, userId) }
             val viewModel = viewModel<StatsViewModel>(factory = factory)
 
             StatsScreen(viewModel = viewModel)
@@ -207,9 +244,6 @@ fun MainNavGraph(navController: NavHostController) {
             
             ProfileScreen(
                 viewModel = viewModel,
-                onEdit = {
-                    navController.navigate(Routes.EDIT_PROFILE)
-                },
                 onHomeClick = {
                     navController.navigate(Routes.MATERI_LIST) {
                         launchSingleTop = true
@@ -220,15 +254,5 @@ fun MainNavGraph(navController: NavHostController) {
             )
         }
 
-        composable(Routes.EDIT_PROFILE) {
-            EditProfileScreen(
-                onSave = {
-                    navController.popBackStack()
-                },
-                onDiscard = {
-                    navController.popBackStack()
-                }
-            )
-        }
     }
 }

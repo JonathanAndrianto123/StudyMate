@@ -33,7 +33,6 @@ fun ListMateriScreen(
     onDetailClick: (Int) -> Unit,
     onProfileClick: () -> Unit = {}
 ) {
-    // ===== DATA =====
     val materiList by viewModel.materiList.collectAsState()
 
     Scaffold(
@@ -110,7 +109,7 @@ fun MateriCard(
             Text("Target Time: ${materi.targetTime}")
 
             LinearProgressIndicator(
-                progress = materi.progress / 100f,
+                progress = { materi.progress / 100f },
                 modifier = Modifier.height(6.dp)
             )
         }

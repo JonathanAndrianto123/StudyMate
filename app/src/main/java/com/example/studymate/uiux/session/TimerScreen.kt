@@ -32,12 +32,27 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 fun TimerScreen(
     materiId: Int,
     materiName: String,
+    targetTime: String,
     viewModel: SessionViewModel,
     onBack: () -> Unit
 ) {
     // Set material when screen loads
-    androidx.compose.runtime.LaunchedEffect(materiId, materiName) {
-        viewModel.setMateri(materiId, materiName)
+    androidx.compose.runtime.LaunchedEffect(materiId, materiName, targetTime) {
+        viewModel.setMateri(materiId, materiName, targetTime)
+    }
+
+    val launcher = androidx.activity.compose.rememberLauncherForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            // Permission granted
+        } else {
+            // Permission denied
+        }
+    }
+
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        launcher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
     }
 
     Scaffold(
@@ -79,6 +94,21 @@ fun TimerScreen(
                     color = Color.Red,
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp
+                )
+            } else if (viewModel.isGracePeriod) {
+                Text(
+                    "Get Ready... Put phone face down",
+                    color = Color(0xFF1F4D3A),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                )
+            } else if (!viewModel.isRunning && viewModel.distractionCount > 0 && viewModel.elapsedSeconds > 0) {
+                 Text(
+                    "DISTRACTION DETECTED!\nPlease flip phone face down.",
+                    color = Color.Red,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
                 )
             } else {
                 Text(

@@ -23,7 +23,6 @@ import com.example.studymate.uiux.materi.NavbarBawah
 @Composable
 fun ProfileScreen(
     viewModel: ProfileViewModel,
-    onEdit: () -> Unit,
     onHomeClick: () -> Unit,
     onProfileClick: () -> Unit
 ) {
@@ -68,9 +67,7 @@ fun ProfileScreen(
 
             Spacer(Modifier.height(24.dp))
 
-            Button(onClick = onEdit) {
-                Text("Edit Profile")
-            }
+
 
             Spacer(Modifier.height(8.dp))
 
