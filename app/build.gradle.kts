@@ -5,8 +5,14 @@ plugins {
     id("org.jetbrains.kotlin.kapt")
 }
 
+
 android {
-    namespace = "com.example.studymate"
+    android {
+        namespace = "com.example.studymate"
+        defaultConfig {
+            applicationId = "com.example.studymate"
+        }
+    }
     compileSdk = 36
 
     defaultConfig {
@@ -66,4 +72,8 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+
+    implementation ("com.google.android.gms:play-services-auth:21.1.0")
+    implementation("io.coil-kt:coil-compose:2.6.0")
+
 }
