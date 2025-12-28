@@ -18,13 +18,24 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.studymate.uiux.materi.NavbarBawah
 
 @Composable
 fun ProfileScreen(
-    viewModel: ProfileViewModel = viewModel(),
-    onEdit: () -> Unit
+    viewModel: ProfileViewModel,
+    onEdit: () -> Unit,
+    onHomeClick: () -> Unit,
+    onProfileClick: () -> Unit
 ) {
-    Scaffold { padding ->
+    Scaffold(
+        bottomBar = {
+            NavbarBawah(
+                onHomeClick = onHomeClick,
+                onProfileClick = onProfileClick,
+                isHome = false
+            )
+        }
+    ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -58,7 +69,13 @@ fun ProfileScreen(
             Spacer(Modifier.height(24.dp))
 
             Button(onClick = onEdit) {
-                Text("Edit")
+                Text("Edit Profile")
+            }
+
+            Spacer(Modifier.height(8.dp))
+
+            androidx.compose.material3.OutlinedButton(onClick = { viewModel.triggerDemoReminder() }) {
+                Text("Test Reminder (5s delay)")
             }
         }
     }

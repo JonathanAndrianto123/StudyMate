@@ -19,13 +19,23 @@ import com.example.studymate.location.PlaceResolver
 import com.example.studymate.sensor.FlipDetector
 import com.example.studymate.ui.theme.StudyMateTheme
 import com.example.studymate.uiux.session.SessionViewModel
+import com.example.studymate.uiux.session.SessionViewModelFactory
 import kotlinx.coroutines.launch
 import androidx.activity.viewModels
 
 class MainActivity : ComponentActivity() {
 
     private lateinit var flipDetector: FlipDetector
-    private val sessionViewModel: SessionViewModel by viewModels()
+    private val sessionViewModel: SessionViewModel by viewModels {
+        val userPrefs = com.example.studymate.util.UserPreferences(applicationContext)
+        val db = com.example.studymate.data.local.StudymateDatabase.getDatabase(applicationContext)
+        val repository = com.example.studymate.data.repository.StudySessionRepository(db.studySessionDao())
+        com.example.studymate.uiux.session.SessionViewModelFactory(
+            applicationContext,
+            repository,
+            userPrefs.getCurrentUserId()
+        )
+    }
 
     private var lastFlipTs = 0L
     private val DEBOUNCE_MS = 1200L
@@ -60,6 +70,20 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+
+        scheduleStudyReminders()
+    }
+
+    private fun scheduleStudyReminders() {
+        val workRequest = androidx.work.PeriodicWorkRequestBuilder<com.example.studymate.worker.StudyReminderWorker>(
+            24, java.util.concurrent.TimeUnit.HOURS
+        ).build()
+
+        androidx.work.WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            "STUDY_REMINDER_WORK",
+            androidx.work.ExistingPeriodicWorkPolicy.KEEP,
+            workRequest
+        )
     }
 
     override fun onResume() {

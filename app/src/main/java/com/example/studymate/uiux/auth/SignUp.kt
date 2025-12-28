@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -73,6 +74,16 @@ fun SignUp(
 
             Spacer(modifier = Modifier.height(32.dp))
 
+            // ===== ERROR MESSAGE =====
+            viewModel.errorMessage?.let { error ->
+                Text(
+                    text = error,
+                    color = Color.Red,
+                    fontSize = 14.sp,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+            }
+
             // ===== INPUTS =====
             RegisterTextField(
                 hint = "Complete Name",
@@ -108,23 +119,28 @@ fun SignUp(
 
             // ===== FOOTER =====
             Button(
-                onClick = {
-                    viewModel.signUp()
-                    onSignUpClicked()
-                },
+                onClick = { viewModel.signUp(onSignUpClicked) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(55.dp),
                 shape = RoundedCornerShape(30.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF1F4D3A)
-                )
+                ),
+                enabled = !viewModel.isLoading
             ) {
-                Text(
-                    text = "SIGN UP",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                if (viewModel.isLoading) {
+                    CircularProgressIndicator(
+                        color = Color.White,
+                        modifier = Modifier.height(24.dp)
+                    )
+                } else {
+                    Text(
+                        text = "SIGN UP",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))

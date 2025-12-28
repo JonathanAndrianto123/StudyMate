@@ -12,9 +12,14 @@ object Routes {
         return "detail_materi/$materiId"
     }
 
-    const val TIMER = "timer"
+    const val TIMER = "timer/{materiId}/{materiName}"
+    fun timer(materiId: Int, materiName: String): String {
+        return "timer/$materiId/$materiName"
+    }
+
     const val SESSION_HISTORY = "session_history"
 
     const val STATS = "stats"
     const val PROFILE = "profile"
+    const val EDIT_PROFILE = "edit_profile"
 }

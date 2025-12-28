@@ -28,21 +28,11 @@ import androidx.compose.runtime.remember
 
 @Composable
 fun ListMateriScreen(
+    viewModel: MateriViewModel,
     onAddClick: () -> Unit,
     onDetailClick: (Int) -> Unit,
     onProfileClick: () -> Unit = {}
 ) {
-    val context = LocalContext.current
-
-    // ===== DB & REPO =====
-    val db = remember { StudymateDatabase.getDatabase(context) }
-    val repository = remember { MateriRepository(db.materiDao()) }
-
-    // ===== VIEWMODEL =====
-    val viewModel: MateriViewModel = viewModel(
-        factory = MateriViewModelFactory(repository)
-    )
-
     // ===== DATA =====
     val materiList by viewModel.materiList.collectAsState()
 
@@ -132,17 +122,18 @@ fun MateriCard(
 @Composable
 fun NavbarBawah(
     onHomeClick: () -> Unit,
-    onProfileClick: () -> Unit
+    onProfileClick: () -> Unit,
+    isHome: Boolean = true
 ) {
     NavigationBar(containerColor = Color.White) {
         NavigationBarItem(
-            selected = true,
+            selected = isHome,
             onClick = onHomeClick,
             icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
             label = { Text("Home") }
         )
         NavigationBarItem(
-            selected = false,
+            selected = !isHome,
             onClick = onProfileClick,
             icon = { Icon(Icons.Default.Person, contentDescription = "Profile") },
             label = { Text("Profile") }
@@ -150,6 +141,7 @@ fun NavbarBawah(
     }
 }
 
+/*
 @Preview(showBackground = true)
 @Composable
 fun ListMateriScreenPreview() {
@@ -158,4 +150,5 @@ fun ListMateriScreenPreview() {
         onDetailClick = {}
     )
 }
+*/
 

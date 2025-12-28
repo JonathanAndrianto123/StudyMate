@@ -27,7 +27,7 @@ fun DetailMateriScreen(
     materiId: Int,
     viewModel: MateriViewModel,
     onBack: () -> Unit,
-    onStartTimer: () -> Unit
+    onStartTimer: (Int, String) -> Unit
 ) {
     val materiState by viewModel.getMateriById(materiId)
         .collectAsState(initial = null)
@@ -67,11 +67,24 @@ fun DetailMateriScreen(
             Text("Target Time", color = Color.Gray, fontSize = 13.sp)
             Text(materi.targetTime, fontSize = 28.sp, fontWeight = FontWeight.Bold)
 
-            Text("Progress", color = Color.Gray, fontSize = 13.sp)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Progress", color = Color.Gray, fontSize = 13.sp)
+                Text("${materi.progress}%", fontWeight = FontWeight.Bold, fontSize = 13.sp)
+            }
             LinearProgressIndicator(
                 progress = materi.progress / 100f,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                color = Color(0xFF1F4D3A)
             )
+
+            Spacer(Modifier.height(8.dp))
+            
+            Text("Total Time Spent", color = Color.Gray, fontSize = 13.sp)
+            Text(formatStudyTime(materi.totalSeconds), fontSize = 18.sp, fontWeight = FontWeight.Medium)
 
             Text("Description", color = Color.Gray, fontSize = 13.sp)
             Text(materi.description.ifBlank { "No description" })
@@ -79,7 +92,7 @@ fun DetailMateriScreen(
             Spacer(Modifier.height(24.dp))
 
             Button(
-                onClick = onStartTimer,
+                onClick = { onStartTimer(materi.id, materi.name) },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("START STUDY")
@@ -97,4 +110,17 @@ fun InfoBox(title: String, value: String) {
         Text(title, fontSize = 13.sp, color = Color.Gray)
         Text(value, fontSize = 15.sp, fontWeight = FontWeight.Medium)
     }
+}
+
+fun formatStudyTime(totalSeconds: Int): String {
+    val h = totalSeconds / 3600
+    val m = (totalSeconds % 3600) / 60
+    val s = totalSeconds % 60
+    
+    val parts = mutableListOf<String>()
+    if (h > 0) parts.add("${h}h")
+    if (m > 0 || h > 0) parts.add("${m}m")
+    parts.add("${s}s")
+    
+    return parts.joinToString(" ")
 }

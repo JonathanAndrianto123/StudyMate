@@ -20,6 +20,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -29,9 +30,16 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimerScreen(
+    materiId: Int,
+    materiName: String,
     viewModel: SessionViewModel,
     onBack: () -> Unit
 ) {
+    // Set material when screen loads
+    androidx.compose.runtime.LaunchedEffect(materiId, materiName) {
+        viewModel.setMateri(materiId, materiName)
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -53,7 +61,32 @@ fun TimerScreen(
             verticalArrangement = Arrangement.Center
         ) {
 
-            Text(viewModel.formattedTime, fontSize = 40.sp)
+            // Display material name
+            Text(
+                text = materiName,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF1F4D3A)
+            )
+
+            Spacer(Modifier.height(16.dp))
+
+            Text(viewModel.formattedTime, fontSize = 60.sp, fontWeight = FontWeight.Bold)
+
+            if (viewModel.targetReached) {
+                Text(
+                    "TARGET REACHED!",
+                    color = Color.Red,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp
+                )
+            } else {
+                Text(
+                    "Remaining: ${viewModel.formattedRemainingTime}",
+                    color = Color.Gray,
+                    fontSize = 16.sp
+                )
+            }
 
             Spacer(Modifier.height(24.dp))
 
@@ -61,8 +94,9 @@ fun TimerScreen(
                 Button(onClick = { viewModel.startTimer() }) { Text("START") }
                 Button(onClick = { viewModel.pauseTimer() }) { Text("PAUSE") }
                 Button(onClick = {
-                    viewModel.stopTimer()
-                    onBack()
+                    viewModel.stopTimer {
+                        onBack()
+                    }
                 }) { Text("STOP") }
             }
         }

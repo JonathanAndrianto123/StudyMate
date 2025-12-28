@@ -10,18 +10,22 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
-
 @Composable
 fun StatsScreen(
-    viewModel: StatsViewModel = viewModel()
+    viewModel: StatsViewModel
 ) {
+    val stats by viewModel.stats.collectAsState()
+
     Scaffold { padding ->
         Column(
             modifier = Modifier
@@ -33,9 +37,12 @@ fun StatsScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            viewModel.stats.forEach {
-                Text(it.materiName)
-                LinearProgressIndicator(progress = it.progress / 100f)
+            stats.forEach {
+                Text(it.name)
+                LinearProgressIndicator(
+                    progress = it.progress / 100f,
+                    modifier = Modifier.fillMaxWidth()
+                )
                 Spacer(Modifier.height(12.dp))
             }
         }
