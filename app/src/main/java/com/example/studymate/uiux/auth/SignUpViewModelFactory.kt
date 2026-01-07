@@ -1,0 +1,19 @@
+package com.example.studymate.uiux.auth
+
+import android.content.Context
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import com.example.studymate.data.repository.UserRepository
+
+class SignUpViewModelFactory(
+    private val context: Context,
+    private val userRepository: UserRepository
+) : ViewModelProvider.Factory {
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(SignUpViewModel::class.java)) {
+            return SignUpViewModel(context, userRepository) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
+    }
+}
