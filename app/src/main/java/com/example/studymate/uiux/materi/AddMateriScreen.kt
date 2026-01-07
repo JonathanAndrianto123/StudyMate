@@ -1,4 +1,4 @@
-package com.example.studymate
+package com.example.studymate.uiux.materi
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
@@ -13,9 +13,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
-fun AddMateriScreen() {
+fun AddMateriScreen(
+    onBack: () -> Unit,
+    viewModel: MateriViewModel,
+    onProfileClick: () -> Unit = {}
+) {
     var materiName by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var hour by remember { mutableStateOf("") }
@@ -23,7 +28,10 @@ fun AddMateriScreen() {
     var second by remember { mutableStateOf("") }
 
     Scaffold(
-        bottomBar = { NavbarBawah() }
+        bottomBar = { NavbarBawah(
+            onHomeClick = {},
+            onProfileClick = onProfileClick
+        ) }
     ) { padding ->
         Column(
             modifier = Modifier
@@ -114,7 +122,14 @@ fun AddMateriScreen() {
                 Spacer(modifier = Modifier.height(40.dp))
 
                 Button(
-                    onClick = { /* */ },
+                    onClick = {
+                        viewModel.addMateri(
+                            name = materiName,
+                            targetTime = normalizeTime(hour, minute, second),
+                            description = description
+                        )
+                        onBack()
+                    },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1C4D43)),
                     shape = MaterialTheme.shapes.medium,
                     modifier = Modifier
@@ -144,8 +159,16 @@ fun TimeField(value: String, onValueChange: (String) -> Unit, placeholder: Strin
     )
 }
 
-@Preview(showBackground = true)
-@Composable
-fun AddMateriScreenPreview() {
-    AddMateriScreen()
+fun normalizeTime(h: String, m: String, s: String): String {
+    val hh = h.ifBlank { "00" }.padStart(2, '0')
+    val mm = m.ifBlank { "00" }.padStart(2, '0')
+    val ss = s.ifBlank { "00" }.padStart(2, '0')
+    return "$hh:$mm:$ss"
 }
+
+
+//@Preview(showBackground = true)
+//@Composable
+//fun AddMateriScreenPreview() {
+//    AddMateriScreen()
+//}
