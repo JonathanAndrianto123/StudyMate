@@ -16,9 +16,6 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,19 +26,23 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.studymate.uiux.RegisterTextField
 
 @Composable
 fun SignUp(
     onSignUpClicked: () -> Unit = {},
     onSignInClicked: () -> Unit = {}
 ) {
+    // Local state for UI demo
+    var name by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var verifyPassword by remember { mutableStateOf("") }
+
     Scaffold { padding ->
         Column (
             modifier = Modifier
@@ -70,23 +71,31 @@ fun SignUp(
             Spacer(modifier = Modifier.height(32.dp))
             RegisterTextField(
                 hint = "Complete Name",
-                icon = Icons.Default.Person
+                icon = Icons.Default.Person,
+                value = name,
+                onValueChange = { name = it }
             )
 
             RegisterTextField(
                 hint = "Email Address",
-                icon = Icons.Default.Email
+                icon = Icons.Default.Email,
+                value = email,
+                onValueChange = { email = it }
             )
 
             RegisterTextField(
                 hint = "Create Password",
                 icon = Icons.Default.Lock,
+                value = password,
+                onValueChange = { password = it },
                 isPassword = true
             )
 
             RegisterTextField(
                 hint = "Verify Password",
                 icon = Icons.Default.Lock,
+                value = verifyPassword,
+                onValueChange = { verifyPassword = it },
                 isPassword = true
             )
 
@@ -128,44 +137,6 @@ fun SignUp(
             }
         }
     }
-}
-@Composable
-fun RegisterTextField(
-    hint: String,
-    icon: ImageVector,
-    isPassword: Boolean = false
-) {
-    var text by remember { mutableStateOf("") }
-
-    Spacer(modifier = Modifier.height(12.dp))
-
-    OutlinedTextField(
-        value = text,
-        onValueChange = { text = it },
-        placeholder = { Text(hint) },
-        leadingIcon = {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = Color.Gray
-            )
-        },
-        singleLine = true,
-        visualTransformation = if (isPassword)
-            PasswordVisualTransformation()
-        else
-            VisualTransformation.None,
-        shape = RoundedCornerShape(30.dp),
-        colors = OutlinedTextFieldDefaults.colors(
-            unfocusedBorderColor = Color.Transparent,
-            focusedBorderColor = Color.Transparent,
-            unfocusedContainerColor = Color(0xFFF2F2F2),
-            focusedContainerColor = Color(0xFFF2F2F2)
-        ),
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(55.dp)
-    )
 }
 
 @Preview(showBackground = true)
