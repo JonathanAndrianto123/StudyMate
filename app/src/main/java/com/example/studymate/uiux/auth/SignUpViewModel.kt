@@ -10,7 +10,6 @@ import com.example.studymate.data.local.entity.UserEntity
 import com.example.studymate.data.repository.UserRepository
 import com.example.studymate.util.UserPreferences
 import kotlinx.coroutines.launch
-import org.mindrot.jbcrypt.BCrypt
 
 class SignUpViewModel(
     private val context: Context,
@@ -25,63 +24,66 @@ class SignUpViewModel(
         private set
     var confirmPassword by mutableStateOf("")
         private set
-    
+
     var errorMessage by mutableStateOf<String?>(null)
         private set
+
     var isLoading by mutableStateOf(false)
         private set
 
-    fun onNameChange(v: String) { name = v }
-    fun onEmailChange(v: String) { email = v }
-    fun onPasswordChange(v: String) { password = v }
-    fun onConfirmPasswordChange(v: String) { confirmPassword = v }
+    fun onNameChange(value: String) { name = value }
+    fun onEmailChange(value: String) { email = value }
+    fun onPasswordChange(value: String) { password = value }
+    fun onConfirmPasswordChange(value: String) { confirmPassword = value }
 
     fun signUp(onSuccess: () -> Unit) {
+        errorMessage = null
+
+        // Validation
         if (name.isBlank() || email.isBlank() || password.isBlank()) {
             errorMessage = "Please fill all fields"
             return
         }
+
         if (password != confirmPassword) {
-            errorMessage = "Passwords do not match"
+            errorMessage = "Passwords don't match"
+            return
+        }
+
+        if (password.length < 6) {
+            errorMessage = "Password must be at least 6 characters"
             return
         }
 
         isLoading = true
-        errorMessage = null
-
         viewModelScope.launch {
             try {
-                // Check if user exists
-                val existing = userRepository.getUserByEmail(email)
-                if (existing != null) {
+                // Check if email already exists
+                val existingUser = userRepository.getUserByEmail(email)
+                if (existingUser != null) {
                     errorMessage = "Email already registered"
                     isLoading = false
                     return@launch
                 }
 
-                // Hash password
-                val hashed = BCrypt.hashpw(password, BCrypt.gensalt())
-                
+                // Create new user
+                val hashed = org.mindrot.jbcrypt.BCrypt.hashpw(password, org.mindrot.jbcrypt.BCrypt.gensalt())
                 val user = UserEntity(
                     name = name,
                     email = email,
                     password = hashed
                 )
-                
-                val id = userRepository.registerUser(user)
-                
-                // Auto login after sign up?
-                if (id > 0) {
-                     val prefs = UserPreferences(context)
-                     prefs.saveCurrentUser(id.toInt(), email)
-                     onSuccess()
-                } else {
-                    errorMessage = "Registration failed"
-                }
 
+                val userId = userRepository.registerUser(user)
+                
+                // Save user session
+                val userPrefs = UserPreferences(context)
+                userPrefs.saveCurrentUser(userId.toInt(), email)
+                
+                isLoading = false
+                onSuccess()
             } catch (e: Exception) {
-                errorMessage = e.message ?: "Unknown error"
-            } finally {
+                errorMessage = "Registration failed: ${e.message}"
                 isLoading = false
             }
         }

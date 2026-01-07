@@ -7,13 +7,12 @@ import com.example.studymate.data.repository.UserRepository
 
 class ProfileViewModelFactory(
     private val context: Context,
-    private val userRepository: UserRepository,
-    private val userId: Int
+    private val userRepository: UserRepository
 ) : ViewModelProvider.Factory {
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(ProfileViewModel::class.java)) {
-            return ProfileViewModel(context, userRepository, userId) as T
+            return ProfileViewModel(context, userRepository) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

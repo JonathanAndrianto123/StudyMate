@@ -7,20 +7,19 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import androidx.work.ListenableWorker
 
 class StudyReminderWorker(
     appContext: Context,
     workerParams: WorkerParameters
 ) : CoroutineWorker(appContext, workerParams) {
 
-    override suspend fun doWork(): ListenableWorker.Result {
-        sendReminderNotification(applicationContext)
-        return ListenableWorker.Result.success()
+    override suspend fun doWork(): Result {
+        sendReminderNotification()
+        return Result.success()
     }
 
-    private fun sendReminderNotification(context: Context) {
-        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+    private fun sendReminderNotification() {
+        val notificationManager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val channelId = "STUDY_REMINDER_CHANNEL"
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -34,7 +33,7 @@ class StudyReminderWorker(
             notificationManager.createNotificationChannel(channel)
         }
 
-        val builder = NotificationCompat.Builder(context, channelId)
+        val builder = NotificationCompat.Builder(applicationContext, channelId)
             .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setContentTitle("Study Time!")
             .setContentText("Don't forget to study today! Keep your streaks alive.")

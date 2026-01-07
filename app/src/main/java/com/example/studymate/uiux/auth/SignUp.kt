@@ -1,5 +1,6 @@
-package com.example.studymate
+package com.example.studymate.uiux.auth
 
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -16,6 +17,10 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,40 +31,39 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.studymate.uiux.RegisterTextField
 
 @Composable
 fun SignUp(
+    viewModel: SignUpViewModel = viewModel(),
     onSignUpClicked: () -> Unit = {},
     onSignInClicked: () -> Unit = {}
 ) {
-    // Local state for UI demo
-    var name by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var verifyPassword by remember { mutableStateOf("") }
-
     Scaffold { padding ->
-        Column (
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
                 .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.Start
-        ){
+        ) {
+
             Spacer(modifier = Modifier.height(60.dp))
 
-            // ===== TITLE =====
+            // ===== HEADER =====
             Text(
                 text = "Register Now",
                 fontSize = 26.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF1F4D3A)
             )
+
             Spacer(modifier = Modifier.height(6.dp))
 
             Text(
@@ -69,56 +73,79 @@ fun SignUp(
             )
 
             Spacer(modifier = Modifier.height(32.dp))
+
+            // ===== ERROR MESSAGE =====
+            viewModel.errorMessage?.let { error ->
+                Text(
+                    text = error,
+                    color = Color.Red,
+                    fontSize = 14.sp,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+            }
+
+            // ===== INPUTS =====
             RegisterTextField(
                 hint = "Complete Name",
                 icon = Icons.Default.Person,
-                value = name,
-                onValueChange = { name = it }
+                value = viewModel.name,
+                onValueChange = viewModel::onNameChange
             )
 
             RegisterTextField(
                 hint = "Email Address",
                 icon = Icons.Default.Email,
-                value = email,
-                onValueChange = { email = it }
+                value = viewModel.email,
+                onValueChange = viewModel::onEmailChange
             )
 
             RegisterTextField(
                 hint = "Create Password",
                 icon = Icons.Default.Lock,
-                value = password,
-                onValueChange = { password = it },
+                value = viewModel.password,
+                onValueChange = viewModel::onPasswordChange,
                 isPassword = true
             )
 
             RegisterTextField(
                 hint = "Verify Password",
                 icon = Icons.Default.Lock,
-                value = verifyPassword,
-                onValueChange = { verifyPassword = it },
+                value = viewModel.confirmPassword,
+                onValueChange = viewModel::onConfirmPasswordChange,
                 isPassword = true
             )
 
             Spacer(modifier = Modifier.height(32.dp))
-            Button (
-                onClick = onSignUpClicked,
+
+            // ===== FOOTER =====
+            Button(
+                onClick = { viewModel.signUp(onSignUpClicked) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(55.dp),
                 shape = RoundedCornerShape(30.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF1F4D3A)
-                )
+                ),
+                enabled = !viewModel.isLoading
             ) {
-                Text(
-                    text = "SIGN UP",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                if (viewModel.isLoading) {
+                    CircularProgressIndicator(
+                        color = Color.White,
+                        modifier = Modifier.height(24.dp)
+                    )
+                } else {
+                    Text(
+                        text = "SIGN UP",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
-            Row (
+
+            Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center
             ) {
@@ -138,6 +165,47 @@ fun SignUp(
         }
     }
 }
+
+
+@Composable
+fun RegisterTextField(
+    hint: String,
+    icon: ImageVector,
+    value: String,
+    onValueChange: (String) -> Unit,
+    isPassword: Boolean = false
+) {
+    Spacer(modifier = Modifier.height(12.dp))
+
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        placeholder = { Text(hint) },
+        leadingIcon = {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = Color.Gray
+            )
+        },
+        singleLine = true,
+        visualTransformation = if (isPassword)
+            PasswordVisualTransformation()
+        else
+            VisualTransformation.None,
+        shape = RoundedCornerShape(30.dp),
+        colors = OutlinedTextFieldDefaults.colors(
+            unfocusedBorderColor = Color.Transparent,
+            focusedBorderColor = Color.Transparent,
+            unfocusedContainerColor = Color(0xFFF2F2F2),
+            focusedContainerColor = Color(0xFFF2F2F2)
+        ),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(55.dp)
+    )
+}
+
 
 @Preview(showBackground = true)
 @Composable
